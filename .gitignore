@@ -1,8 +1,23 @@
+# Virtual Environment
 venv/
 
+# Python
+__pycache__/
+*.pkl
+
+# Machine Learning Models
 *.pt
 *.pth
 
+# Media Files
+*.mp4
+*.avi
+
+# Logs and Output
 runs/
-outputs/
-__pycache__/
+
+# System Files
+.DS_Store
+
+# IDE/Editor
+.vscode/
