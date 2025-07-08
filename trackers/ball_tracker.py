@@ -2,6 +2,7 @@ from ultralytics import YOLO
 from utils import log_function_call
 import cv2
 import pickle
+import pandas as pd
 
 
 class BallTracker:
@@ -67,3 +68,17 @@ class BallTracker:
                 )
 
         return frames
+
+    @log_function_call
+    def interpolate_ball(self, ball_positions):
+        """
+        Interpolate missing ball detections.
+        """
+        ball_positions = [x.get(1, []) for x in ball_positions]
+        df_ball_positions = pd.DataFrame(
+            ball_positions, columns=["x1", "y1", "x2", "y2"]
+        )
+        df_ball_positions = df_ball_positions.interpolate()
+        df_ball_positions = df_ball_positions.bfill()
+
+        return [{1: x} for x in df_ball_positions.to_numpy().tolist()]

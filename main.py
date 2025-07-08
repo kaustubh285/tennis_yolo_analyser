@@ -24,6 +24,7 @@ def main(input_path, output_path):
         read_from_stub=True,
         stub_path="tracker_stubs/ball_detections.pkl",
     )
+    ball_detections = ball_tracker.interpolate_ball(ball_detections)
     court_keypoints = court_line_detector.predict(video_frames[0])
 
     # Draw
