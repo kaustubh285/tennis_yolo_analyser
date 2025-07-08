@@ -1,0 +1,6 @@
+venv/
+
+*.pt
+*.pth
+
+runs/
