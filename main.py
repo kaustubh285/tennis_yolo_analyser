@@ -1,6 +1,7 @@
 from utils import log_function_call, read_video, save_video
 from trackers import PlayerTracker, BallTracker
 from court_line_detector import CourtLineDetector
+import cv2
 
 
 @log_function_call
@@ -27,6 +28,11 @@ def main(input_path, output_path):
     ball_detections = ball_tracker.interpolate_ball(ball_detections)
     court_keypoints = court_line_detector.predict(video_frames[0])
 
+    # choose those people are close to the court
+    player_detections = player_tracker.filter_players_near_court(
+        player_detections, court_keypoints
+    )
+
     # Draw
     updated_video = player_tracker.draw_bbox(video_frames, player_detections)
     updated_video = ball_tracker.draw_bbox(updated_video, ball_detections)
@@ -34,6 +40,16 @@ def main(input_path, output_path):
         updated_video, court_keypoints
     )
 
+    for i, frame in enumerate(updated_video):
+        cv2.putText(
+            frame,
+            f"Frame: {i + 1}/{len(updated_video)}",
+            (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (255, 255, 255),
+            2,
+        )
     save_video(updated_video, output_path)
 
 

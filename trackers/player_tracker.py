@@ -1,5 +1,5 @@
 from ultralytics import YOLO
-from utils import log_function_call
+from utils import log_function_call, get_bbox_center, measure_distance
 import cv2
 import pickle
 
@@ -71,3 +71,42 @@ class PlayerTracker:
                 )
 
         return frames
+
+    def filter_players_near_court(self, player_detections, court_keypoints):
+        player_detections_first_frame = player_detections[0]
+        chosen_players = self.choose_players(
+            court_keypoints, player_detections_first_frame
+        )
+        filtered_player_detections = []
+        for player_dict in player_detections:
+            filtered_player_detections.append(
+                {
+                    track_id: bbox
+                    for track_id, bbox in player_dict.items()
+                    if track_id in chosen_players
+                }
+            )
+        return filtered_player_detections
+
+    def choose_players(self, court_keypoints, player_detections_first_frame):
+        """
+        Choose players who are close to the court based on their bounding boxes.
+        """
+        distances = []
+        for track_id, bbox in player_detections_first_frame.items():
+
+            min_distance_threshold = float("inf")
+            bbox_center = get_bbox_center(bbox)
+
+            for i in range(0, len(court_keypoints), 2):
+                keypoint = (court_keypoints[i], court_keypoints[i + 1])
+                distance = measure_distance(bbox_center, keypoint)
+                if distance < min_distance_threshold:
+                    min_distance_threshold = distance
+                    distances.append((track_id, distance))
+
+        distances.sort(key=lambda x: x[1])
+        # Choose top 2 players closest to the court
+        chosen_players = [x[0] for x in distances[:2]]
+
+        return chosen_players
